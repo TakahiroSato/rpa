@@ -36,8 +36,8 @@ func Test_SearchImg(t *testing.T) {
 
 	testResult := false
 	for i, r := range results {
-		if r.ok {
-			fmt.Printf("OK %0.2f [x=%d, y=%d]\n", scaleFactors[i], r.x, r.y)
+		if r.Ok {
+			fmt.Printf("OK %0.2f [x=%d, y=%d]\n", scaleFactors[i], r.X, r.Y)
 			testResult = true
 		} else {
 			fmt.Printf("NG %0.2f\n", scaleFactors[i])

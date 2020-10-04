@@ -18,8 +18,8 @@ type SearchedData struct {
 
 // Click : 見つけた場所をクリックする
 func (d SearchedData) Click() {
-	if d.ok {
-		robotgo.MoveMouse(d.x, d.y)
+	if d.Ok {
+		robotgo.MoveMouse(d.X, d.Y)
 		robotgo.MouseClick("left", true)
 	}
 }
@@ -106,16 +106,16 @@ func SearchImg(title string, imgPath string, opts ...option) <-chan SearchedData
 			_wY := multiply(wY, 1/o.ScaleFactor)
 
 			ch <- SearchedData{
-				ok: true,
-				x:  x + _wX,
-				y:  y + _wY,
+				Ok: true,
+				X:  x + _wX,
+				Y:  y + _wY,
 			}
 		} else {
 			printPreTime(imgPath + " is not found...")
 			ch <- SearchedData{
-				ok: false,
-				x:  -1,
-				y:  -1,
+				Ok: false,
+				X:  -1,
+				Y:  -1,
 			}
 		}
 
