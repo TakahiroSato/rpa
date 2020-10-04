@@ -53,3 +53,12 @@ func Test_SearchImg(t *testing.T) {
 		t.Error("NG")
 	}
 }
+
+func Test_DragAndDrop(t *testing.T) {
+	d := SearchedData{
+		Ok: true,
+		X:  500,
+		Y:  500,
+	}
+	d.DragAndDrop(500, -50, -100, 100)
+}

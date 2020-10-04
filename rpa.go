@@ -17,17 +17,27 @@ type SearchedData struct {
 }
 
 // Move : 見つめた場所にマウスカーソルを移動させる
-func (d SearchedData) Move() {
+func (d SearchedData) Move(offsetX int, offsetY int) {
 	if d.Ok {
-		robotgo.MoveMouse(d.X, d.Y)
+		robotgo.MoveMouse(d.X+offsetX, d.Y+offsetY)
 	}
 }
 
 // Click : 見つけた場所をクリックする
-func (d SearchedData) Click() {
+func (d SearchedData) Click(offsetX int, offsetY int) {
 	if d.Ok {
-		robotgo.MoveMouse(d.X, d.Y)
+		robotgo.MoveMouse(d.X+offsetX, d.Y+offsetY)
 		robotgo.MouseClick("left", true)
+	}
+}
+
+// DragAndDrop : 見つけた場所から、指定量ドラッグアンドドロップする
+func (d SearchedData) DragAndDrop(offsetX int, offsetY int, moveX int, moveY int) {
+	if d.Ok {
+		srcX := d.X + offsetX
+		srcY := d.Y + offsetY
+		d.Move(offsetX, offsetY)
+		robotgo.DragSmooth(srcX+moveX, srcY+moveY)
 	}
 }
 
