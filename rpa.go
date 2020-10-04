@@ -61,9 +61,9 @@ func SearchImgAndClick(title string, imgPath string, opts ...option) <-chan bool
 		}
 
 		var x, y int
-		// 1分くらい探して見つからなかったら無いと判断して終わる。
+		// 5回探して見つからなかったら無いことにする
 		printPreTime("Finding " + imgPath + " ...")
-		for i := 0; i < 60; i++ {
+		for i := 0; i < 5; i++ {
 			result := func() bool {
 				refRect := robotgo.CaptureScreen(wX, wY, wW, wH)
 				defer robotgo.FreeBitmap(refRect)
