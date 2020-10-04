@@ -9,7 +9,7 @@ import (
 )
 
 func Test_SearchImg(t *testing.T) {
-	title := "pwsh"
+	title := "rpa_test.go - rpa - Visual Studio Code"
 	testImgPath := "./test/test.png"
 
 	scaleFactors := []float64{
@@ -21,17 +21,22 @@ func Test_SearchImg(t *testing.T) {
 	results := make([]SearchedData, len(scaleFactors))
 
 	for i, scaleFactor := range scaleFactors {
-		wX, wY, wW, _ := getBounds(title, scaleFactor)
-		findImg := robotgo.CaptureScreen(wX+wW-150, wY+10, 100, 100)
-		defer robotgo.FreeBitmap(findImg)
-		robotgo.SaveBitmap(findImg, testImgPath)
-		ch := SearchImg(title, testImgPath, ScaleFactor(scaleFactor))
+		func() {
+			wX, wY, wW, wH := getBounds(title, scaleFactor)
+			screenshot := robotgo.CaptureScreen(wX, wY, wW, wH)
+			defer robotgo.FreeBitmap(screenshot)
+			robotgo.SaveBitmap(screenshot, fmt.Sprintf("./screenshot/test_%d.png", i))
+			findImg := robotgo.CaptureScreen(wX+wW-110, wY+wH-110, 100, 100)
+			defer robotgo.FreeBitmap(findImg)
+			robotgo.SaveBitmap(findImg, testImgPath)
+			ch := SearchImg(title, testImgPath, ScaleFactor(scaleFactor))
 
-		results[i] = <-ch
+			results[i] = <-ch
 
-		if err := os.Remove(testImgPath); err != nil {
-			t.Error(err)
-		}
+			if err := os.Remove(testImgPath); err != nil {
+				t.Error(err)
+			}
+		}()
 	}
 
 	testResult := false
