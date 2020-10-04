@@ -9,39 +9,54 @@ import (
 	"github.com/lxn/win"
 )
 
-// SearchImgAndClickOpts : SearchImgAndClick関数のオプション引数
-type SearchImgAndClickOpts struct {
+// SearchedData : 見つけた場所の情報
+type SearchedData struct {
+	ok bool
+	x  int
+	y  int
+}
+
+// Click : 見つけた場所をクリックする
+func (d SearchedData) Click() {
+	if d.ok {
+		robotgo.MoveMouse(d.x, d.y)
+		robotgo.MouseClick("left", true)
+	}
+}
+
+// SearchImgOpts : SearchImg関数のオプション引数
+type SearchImgOpts struct {
 	Tolerance   float64
 	IsSaveImg   bool
 	ScaleFactor float64
 }
 
-type option func(*SearchImgAndClickOpts)
+type option func(*SearchImgOpts)
 
 // Tolerance : 一致度の許容値（デフォルトは0.01 違いを1%まで許容する....多分)
 func Tolerance(v float64) option {
-	return func(o *SearchImgAndClickOpts) {
+	return func(o *SearchImgOpts) {
 		o.Tolerance = v
 	}
 }
 
 // IsSaveImg : スクリーンショットを保存するかどうか（デフォルトはしないfalse）
 func IsSaveImg(v bool) option {
-	return func(o *SearchImgAndClickOpts) {
+	return func(o *SearchImgOpts) {
 		o.IsSaveImg = v
 	}
 }
 
 // ScaleFactor : 画面の拡大率（デフォルトは1.5）
 func ScaleFactor(v float64) option {
-	return func(o *SearchImgAndClickOpts) {
+	return func(o *SearchImgOpts) {
 		o.ScaleFactor = v
 	}
 }
 
-// SearchImgAndClick : 指定タイトルのウィンドウから指定した画像(.png)を探しその場所をクリックする
-func SearchImgAndClick(title string, imgPath string, opts ...option) <-chan bool {
-	o := SearchImgAndClickOpts{
+// SearchImg : 指定タイトルのウィンドウから指定した画像(.png)を探しその情報を返却する
+func SearchImg(title string, imgPath string, opts ...option) <-chan SearchedData {
+	o := SearchImgOpts{
 		Tolerance:   0.01,
 		IsSaveImg:   false,
 		ScaleFactor: 1.5,
@@ -50,7 +65,7 @@ func SearchImgAndClick(title string, imgPath string, opts ...option) <-chan bool
 	for _, opt := range opts {
 		opt(&o)
 	}
-	ch := make(chan bool)
+	ch := make(chan SearchedData)
 
 	go func() {
 		wX, wY, wW, wH := getBounds(title, o.ScaleFactor)
@@ -80,6 +95,7 @@ func SearchImgAndClick(title string, imgPath string, opts ...option) <-chan bool
 		}
 
 		if x > 0 && y > 0 {
+			printPreTime(imgPath + " is found!")
 			if o.IsSaveImg {
 				go saveImg(title, wX, wY, wW, wH)
 			}
@@ -89,13 +105,18 @@ func SearchImgAndClick(title string, imgPath string, opts ...option) <-chan bool
 			_wX := multiply(wX, 1/o.ScaleFactor)
 			_wY := multiply(wY, 1/o.ScaleFactor)
 
-			robotgo.MoveMouse(_wX+x, _wY+y)
-			robotgo.MouseClick("left", true)
-			printPreTime(imgPath + " is found!")
-			ch <- true
+			ch <- SearchedData{
+				ok: true,
+				x:  x + _wX,
+				y:  y + _wY,
+			}
 		} else {
 			printPreTime(imgPath + " is not found...")
-			ch <- false
+			ch <- SearchedData{
+				ok: false,
+				x:  -1,
+				y:  -1,
+			}
 		}
 
 		close(ch)
