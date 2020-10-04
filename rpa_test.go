@@ -25,7 +25,7 @@ func Test_SearchImgAndClick(t *testing.T) {
 	results := make([]bool, 7)
 
 	for i, scaleFactor := range scaleFactors {
-		wX, wY, wW, _ := getBounds(title, 1.25)
+		wX, wY, wW, _ := getBounds(title, scaleFactor)
 		findImg := robotgo.CaptureScreen(wX+wW-150, wY+10, 100, 100)
 		defer robotgo.FreeBitmap(findImg)
 		robotgo.SaveBitmap(findImg, testImgPath)
