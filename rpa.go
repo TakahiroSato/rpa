@@ -11,9 +11,9 @@ import (
 
 // SearchedData : 見つけた場所の情報
 type SearchedData struct {
-	ok bool
-	x  int
-	y  int
+	Ok bool
+	X  int
+	Y  int
 }
 
 // Click : 見つけた場所をクリックする
