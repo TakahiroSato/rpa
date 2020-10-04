@@ -67,24 +67,7 @@ func SearchImgAndClick(title string, imgPath string, opts ...option) <-chan bool
 	ch := make(chan bool)
 
 	go func() {
-		hwnd := robotgo.FindWindow(title)
-		if hwnd == 0 {
-			fmt.Fprintf(os.Stderr, "Could not find window")
-			os.Exit(1)
-		}
-
-		var pid uint32
-		win.GetWindowThreadProcessId(hwnd, &pid)
-
-		wX, wY, wW, wH := robotgo.GetBounds(int32(pid))
-
-		multiply := func(n int, mag float64) int {
-			return int(float64(n) * mag)
-		}
-		wX = multiply(wX, scaleFactor)
-		wY = multiply(wY, scaleFactor)
-		wW = multiply(wW, scaleFactor)
-		wH = multiply(wH, scaleFactor)
+		wX, wY, wW, wH := getBounds(title)
 
 		printPreTime := func(str string) {
 			now := time.Now()
@@ -94,12 +77,18 @@ func SearchImgAndClick(title string, imgPath string, opts ...option) <-chan bool
 		var x, y int
 		// 1分くらい探して見つからなかったら無いと判断して終わる。
 		for i := 0; i < 6; i++ {
-			printPreTime("Searching " + imgPath + " ...")
-			refRect := robotgo.CaptureScreen(wX, wY, wW, wH)
-			x, y = robotgo.FindPic(imgPath, refRect, o.Tolerance)
-			if x <= 0 || y <= 0 {
-				time.Sleep(time.Second * 10)
-			} else {
+			result := func() bool {
+				printPreTime("Finding " + imgPath + " ...")
+				refRect := robotgo.CaptureScreen(wX, wY, wW, wH)
+				defer robotgo.FreeBitmap(refRect)
+				x, y = robotgo.FindPic(imgPath, refRect, o.Tolerance)
+				if x <= 0 || y <= 0 {
+					time.Sleep(time.Second * 10)
+					return false
+				}
+				return true
+			}()
+			if result {
 				break
 			}
 		}
@@ -138,4 +127,26 @@ func saveImg(title string, wX, wY, wW, wH int) {
 	fileName := fmt.Sprintf("%d_%02d_%02d_%02d_%02d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute())
 	fileName = title + "_" + fileName
 	robotgo.SaveBitmap(bitmap, "./screenshot/"+fileName+".png")
+}
+
+func multiply(n int, mag float64) int {
+	return int(float64(n) * mag)
+}
+
+func getBounds(title string) (int, int, int, int) {
+	hwnd := robotgo.FindWindow(title)
+	if hwnd == 0 {
+		fmt.Fprintf(os.Stderr, "Could not find window")
+		os.Exit(1)
+	}
+
+	var pid uint32
+	win.GetWindowThreadProcessId(hwnd, &pid)
+
+	wX, wY, wW, wH := robotgo.GetBounds(int32(pid))
+	wX = multiply(wX, scaleFactor)
+	wY = multiply(wY, scaleFactor)
+	wW = multiply(wW, scaleFactor)
+	wH = multiply(wH, scaleFactor)
+	return wX, wY, wW, wH
 }
