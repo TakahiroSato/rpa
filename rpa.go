@@ -16,6 +16,13 @@ type SearchedData struct {
 	Y  int
 }
 
+// Move : 見つめた場所にマウスカーソルを移動させる
+func (d SearchedData) Move() {
+	if d.Ok {
+		robotgo.MoveMouse(d.X, d.Y)
+	}
+}
+
 // Click : 見つけた場所をクリックする
 func (d SearchedData) Click() {
 	if d.Ok {
