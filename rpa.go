@@ -27,7 +27,7 @@ func (d SearchedData) Move(offsetX int, offsetY int) {
 func (d SearchedData) Click(offsetX int, offsetY int) {
 	if d.Ok {
 		robotgo.MoveMouse(d.X+offsetX, d.Y+offsetY)
-		robotgo.MouseClick("left", true)
+		robotgo.MouseClick("left", false)
 	}
 }
 
