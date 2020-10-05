@@ -23,12 +23,21 @@ func (d SearchedData) Move(offsetX int, offsetY int) {
 	}
 }
 
-// Click : 見つけた場所をクリックする
-func (d SearchedData) Click(offsetX int, offsetY int) {
+func (d SearchedData) click(offsetX int, offsetY int, double bool) {
 	if d.Ok {
 		robotgo.MoveMouse(d.X+offsetX, d.Y+offsetY)
-		robotgo.MouseClick("left", false)
+		robotgo.MouseClick("left", double)
 	}
+}
+
+// Click : 見つけた場所をクリックする
+func (d SearchedData) Click(offsetX int, offsetY int) {
+	d.click(offsetX, offsetY, false)
+}
+
+// DoubleClick : 見つけた場所をダブルクリックする
+func (d SearchedData) DoubleClick(offsetX int, offsetY int) {
+	d.click(offsetX, offsetY, true)
 }
 
 // DragAndDrop : 見つけた場所から、指定量ドラッグアンドドロップする
