@@ -9,47 +9,6 @@ import (
 	"github.com/lxn/win"
 )
 
-// SearchedData : 見つけた場所の情報
-type SearchedData struct {
-	Ok bool
-	X  int
-	Y  int
-}
-
-// Move : 見つめた場所にマウスカーソルを移動させる
-func (d SearchedData) Move(offsetX int, offsetY int) {
-	if d.Ok {
-		robotgo.MoveMouse(d.X+offsetX, d.Y+offsetY)
-	}
-}
-
-func (d SearchedData) click(offsetX int, offsetY int, double bool) {
-	if d.Ok {
-		robotgo.MoveMouse(d.X+offsetX, d.Y+offsetY)
-		robotgo.MouseClick("left", double)
-	}
-}
-
-// Click : 見つけた場所をクリックする
-func (d SearchedData) Click(offsetX int, offsetY int) {
-	d.click(offsetX, offsetY, false)
-}
-
-// DoubleClick : 見つけた場所をダブルクリックする
-func (d SearchedData) DoubleClick(offsetX int, offsetY int) {
-	d.click(offsetX, offsetY, true)
-}
-
-// DragAndDrop : 見つけた場所から、指定量ドラッグアンドドロップする
-func (d SearchedData) DragAndDrop(offsetX int, offsetY int, moveX int, moveY int) {
-	if d.Ok {
-		srcX := d.X + offsetX
-		srcY := d.Y + offsetY
-		d.Move(offsetX, offsetY)
-		robotgo.DragSmooth(srcX+moveX, srcY+moveY)
-	}
-}
-
 // SearchImgOpts : SearchImg関数のオプション引数
 type SearchImgOpts struct {
 	Tolerance   float64
@@ -59,22 +18,22 @@ type SearchImgOpts struct {
 
 type option func(*SearchImgOpts)
 
-// Tolerance : 一致度の許容値（デフォルトは0.01 違いを1%まで許容する....多分)
-func Tolerance(v float64) option {
+// OptTolerance : 一致度の許容値（デフォルトは0.01 違いを1%まで許容する....多分)
+func OptTolerance(v float64) option {
 	return func(o *SearchImgOpts) {
 		o.Tolerance = v
 	}
 }
 
-// IsSaveImg : スクリーンショットを保存するかどうか（デフォルトはしないfalse）
-func IsSaveImg(v bool) option {
+// OptIsSaveImg : スクリーンショットを保存するかどうか（デフォルトはしないfalse）
+func OptIsSaveImg(v bool) option {
 	return func(o *SearchImgOpts) {
 		o.IsSaveImg = v
 	}
 }
 
-// ScaleFactor : 画面の拡大率（デフォルトは1.5）
-func ScaleFactor(v float64) option {
+// OptScaleFactor : 画面の拡大率（デフォルトは1.5）
+func OptScaleFactor(v float64) option {
 	return func(o *SearchImgOpts) {
 		o.ScaleFactor = v
 	}

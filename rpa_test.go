@@ -29,7 +29,7 @@ func Test_SearchImg(t *testing.T) {
 			findImg := robotgo.CaptureScreen(wX+wW-110, wY+wH-110, 100, 100)
 			defer robotgo.FreeBitmap(findImg)
 			robotgo.SaveBitmap(findImg, testImgPath)
-			ch := SearchImg(title, testImgPath, ScaleFactor(scaleFactor))
+			ch := SearchImg(title, testImgPath, OptScaleFactor(scaleFactor))
 
 			results[i] = <-ch
 
@@ -55,10 +55,9 @@ func Test_SearchImg(t *testing.T) {
 }
 
 func Test_DragAndDrop(t *testing.T) {
-	d := SearchedData{
+	SearchedData{
 		Ok: true,
 		X:  500,
 		Y:  500,
-	}
-	d.DragAndDrop(500, -50, -100, 100)
+	}.DragAndDrop(500, -50, -100, 100)
 }
