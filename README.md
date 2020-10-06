@@ -6,5 +6,5 @@ Windows専用
 
 
 ```
-cinst install mingw
+choco install mingw
 ```
