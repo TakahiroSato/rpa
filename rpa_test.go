@@ -61,3 +61,7 @@ func Test_DragAndDrop(t *testing.T) {
 		Y:  500,
 	}.DragAndDrop(500, -50, -100, 100)
 }
+
+func Test_ToGrayScale(t *testing.T) {
+	ToGrayScale("./screenshot/test_1.png")
+}
