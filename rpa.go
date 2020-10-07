@@ -14,6 +14,7 @@ type SearchImgOpts struct {
 	Tolerance   float64
 	IsSaveImg   bool
 	ScaleFactor float64
+	IsGrayScale bool
 }
 
 type option func(*SearchImgOpts)
@@ -39,12 +40,20 @@ func OptScaleFactor(v float64) option {
 	}
 }
 
+// OptIsGrayScale : グレースケールで検索するかどうか（デフォルトはしないfalse）
+func OptIsGrayScale(v bool) option {
+	return func(o *SearchImgOpts) {
+		o.IsGrayScale = v
+	}
+}
+
 // SearchImg : 指定タイトルのウィンドウから指定した画像(.png)を探しその情報を返却する
 func SearchImg(title string, imgPath string, opts ...option) <-chan SearchedData {
 	o := SearchImgOpts{
 		Tolerance:   0.01,
 		IsSaveImg:   false,
 		ScaleFactor: 1.5,
+		IsGrayScale: false,
 	}
 
 	for _, opt := range opts {
@@ -55,26 +64,11 @@ func SearchImg(title string, imgPath string, opts ...option) <-chan SearchedData
 	go func() {
 		wX, wY, wW, wH := getBounds(title, o.ScaleFactor)
 
-		printPreTime := func(str string) {
-			now := time.Now()
-			fmt.Println(fmt.Sprintf("[%02d/%02d %02d:%02d:%02d] ", now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second()) + str)
-		}
-
-		var x, y int
-		// 5回探して見つからなかったら無いことにする
 		printPreTime("Finding " + imgPath + " ...")
+		var x, y int
 		for i := 0; i < 5; i++ {
-			result := func() bool {
-				refRect := robotgo.CaptureScreen(wX, wY, wW, wH)
-				defer robotgo.FreeBitmap(refRect)
-				x, y = robotgo.FindPic(imgPath, refRect, o.Tolerance)
-				if x <= 0 || y <= 0 {
-					time.Sleep(time.Second * 1)
-					return false
-				}
-				return true
-			}()
-			if result {
+			x, y = innerSearchImg(wX, wY, wW, wH, imgPath, o.Tolerance, o.IsGrayScale)
+			if x > 0 || y > 0 {
 				break
 			}
 		}
@@ -108,6 +102,50 @@ func SearchImg(title string, imgPath string, opts ...option) <-chan SearchedData
 	}()
 
 	return ch
+}
+
+func innerSearchImg(wX, wY, wW, wH int, imgPath string, tolerance float64, isGrayScale bool) (int, int) {
+	refRect := robotgo.CaptureScreen(wX, wY, wW, wH)
+	defer robotgo.FreeBitmap(refRect)
+
+	if isGrayScale {
+		refImgName, _ := MakeRandomStr(10)
+		refImgPath := fmt.Sprintf("./tmp/%s.png", refImgName)
+		robotgo.SaveBitmap(refRect, refImgPath)
+		grayRefImgPath := ToGrayScale(refImgPath)
+		grayFindImgPath := ToGrayScale(imgPath)
+		bit := robotgo.OpenBitmap(grayFindImgPath, 2) // 2 = bitmap
+		sbit := robotgo.OpenBitmap(grayRefImgPath, 2) // 2 = bitmap
+		defer func() {
+			robotgo.FreeBitmap(bit)
+			robotgo.FreeBitmap(sbit)
+			removeFilePaths := []string{refImgPath, grayRefImgPath, grayFindImgPath}
+			for {
+				if len(removeFilePaths) == 0 {
+					break
+				}
+				var removedPaths []string
+				for _, path := range removeFilePaths {
+					err := os.Remove(path)
+					if err == nil {
+						removedPaths = append(removedPaths, path)
+					}
+				}
+				for _, p := range removedPaths {
+					i, _ := FindIndexFromStringSlice(removeFilePaths, p)
+					removeFilePaths = DeleteElementFromStringSlice(removeFilePaths, i)
+				}
+			}
+		}()
+		return robotgo.FindBitmap(bit, sbit, tolerance)
+	}
+
+	return robotgo.FindPic(imgPath, refRect, tolerance)
+}
+
+func printPreTime(str string) {
+	now := time.Now()
+	fmt.Println(fmt.Sprintf("[%02d/%02d %02d:%02d:%02d] ", now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second()) + str)
 }
 
 // TODO: 保存先を指定出来るようにする

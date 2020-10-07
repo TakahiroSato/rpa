@@ -1,17 +1,18 @@
 package rpa
 
 import (
-	"crypto/rand"
 	"fmt"
 	"image"
 	"image/color"
 	"image/png"
 	"os"
+
+	"golang.org/x/image/bmp"
 )
 
 // ToGrayScale : グレースケールに変換
 // 参考 : https://qiita.com/tenntenn/items/0471e5f494df82c3e825
-func ToGrayScale(src string) {
+func ToGrayScale(src string) string {
 	srcImg, _ := os.Open(src)
 	defer srcImg.Close()
 	img, _ := png.Decode(srcImg)
@@ -25,30 +26,15 @@ func ToGrayScale(src string) {
 		}
 	}
 
-	tmpFileName, _ := makeRandomStr(10)
-	destImg, err := os.Create(fmt.Sprintf("./tmp/%s.png", tmpFileName))
+	tmpFileName, _ := MakeRandomStr(10)
+	tmpFilePath := fmt.Sprintf("./tmp/%s.bmp", tmpFileName)
+	destImg, err := os.Create(tmpFilePath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	png.Encode(destImg, dest)
-}
 
-// 参考 : https://qiita.com/RyotaNakaya/items/7d269525a288c4b3ecda
-func makeRandomStr(digit uint32) (string, error) {
-	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-	// 乱数を生成
-	b := make([]byte, digit)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-
-	// letters からランダムに取り出して文字列を生成
-	var result string
-	for _, v := range b {
-		// index が letters の長さに収まるように調整
-		result += string(letters[int(v)%len(letters)])
-	}
-	return result, nil
+	// ビット深度16のpngがrobotgoで読み込めないのでbmpでエンコード
+	bmp.Encode(destImg, dest)
+	return tmpFilePath
 }
