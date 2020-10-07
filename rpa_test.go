@@ -98,17 +98,19 @@ func Test_innerSearchImg_GrayScale(t *testing.T) {
 	}
 	scaleFactor := 1.5
 	for _, title := range titles {
-		wX, wY, wW, wH := getBounds(title, scaleFactor)
-		findImg := robotgo.CaptureScreen(wX+500, wY+500, 250, 250)
-		defer robotgo.FreeBitmap(findImg)
-		findImgPath := "./tmp/test.png"
-		robotgo.SaveBitmap(findImg, findImgPath)
-		defer os.Remove(findImgPath)
-		x, y := innerSearchImg(wX, wY, wW, wH, findImgPath, 0.01, true)
-		x = multiply(x, 1/scaleFactor)
-		y = multiply(y, 1/scaleFactor)
-		_wX := multiply(wX, 1/scaleFactor)
-		_wY := multiply(wY, 1/scaleFactor)
-		robotgo.MoveMouse(_wX+x, _wY+y)
+		func() {
+			wX, wY, wW, wH := getBounds(title, scaleFactor)
+			findImg := robotgo.CaptureScreen(wX+500, wY+500, 250, 250)
+			defer robotgo.FreeBitmap(findImg)
+			findImgPath := "./tmp/test.png"
+			robotgo.SaveBitmap(findImg, findImgPath)
+			defer os.Remove(findImgPath)
+			x, y := innerSearchImg(wX, wY, wW, wH, findImgPath, 0.01, true)
+			x = multiply(x, 1/scaleFactor)
+			y = multiply(y, 1/scaleFactor)
+			_wX := multiply(wX, 1/scaleFactor)
+			_wY := multiply(wY, 1/scaleFactor)
+			robotgo.MoveMouse(_wX+x, _wY+y)
+		}()
 	}
 }
