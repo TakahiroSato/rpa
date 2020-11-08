@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/TakahiroSato/imgconv"
 	"github.com/go-vgo/robotgo"
 )
 
@@ -88,7 +89,7 @@ func Test_DragAndDrop(t *testing.T) {
 }
 
 func Test_ToGrayScale(t *testing.T) {
-	ToGrayScale("./screenshot/test_2.png")
+	imgconv.ToGrayScale(LoadImage("./screenshot/test_2.png")).SaveAsBmp("./test/gray.bmp")
 }
 
 func Test_innerSearchImg_GrayScale(t *testing.T) {

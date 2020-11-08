@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/TakahiroSato/imgconv"
 	"github.com/go-vgo/robotgo"
 	"github.com/lxn/win"
 )
@@ -104,16 +105,27 @@ func SearchImg(title string, imgPath string, opts ...option) <-chan SearchedData
 	return ch
 }
 
+// private functions
+
 func innerSearchImg(wX, wY, wW, wH int, imgPath string, tolerance float64, isGrayScale bool) (int, int) {
 	refRect := robotgo.CaptureScreen(wX, wY, wW, wH)
 	defer robotgo.FreeBitmap(refRect)
+
+	_genTmpFilePath := func() string {
+		tmpFileName, _ := MakeRandomStr(10)
+		tmpFilePath := fmt.Sprintf("./tmp/%s.bmp", tmpFileName)
+
+		return tmpFilePath
+	}
 
 	if isGrayScale {
 		refImgName, _ := MakeRandomStr(10)
 		refImgPath := fmt.Sprintf("./tmp/%s.png", refImgName)
 		robotgo.SaveBitmap(refRect, refImgPath)
-		grayRefImgPath := ToGrayScale(refImgPath)
-		grayFindImgPath := ToGrayScale(imgPath)
+		grayRefImgPath := _genTmpFilePath()
+		imgconv.ToGrayScale(LoadImage(refImgPath)).SaveAsBmp(grayRefImgPath)
+		grayFindImgPath := _genTmpFilePath()
+		imgconv.ToGrayScale(LoadImage(imgPath)).SaveAsBmp(grayFindImgPath)
 		bit := robotgo.OpenBitmap(grayFindImgPath, 2) // 2 = bitmap
 		sbit := robotgo.OpenBitmap(grayRefImgPath, 2) // 2 = bitmap
 		defer func() {

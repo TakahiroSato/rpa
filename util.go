@@ -1,6 +1,11 @@
 package rpa
 
-import "crypto/rand"
+import (
+	"crypto/rand"
+	"image"
+	"image/png"
+	"os"
+)
 
 // MakeRandomStr : ランダム文字列生成
 // 参考 : https://qiita.com/RyotaNakaya/items/7d269525a288c4b3ecda
@@ -40,4 +45,13 @@ func FindIndexFromStringSlice(s []string, searchTerm string) (int, bool) {
 		}
 	}
 	return -1, false
+}
+
+// LoadImage : 画像ファイル読み込み(pngのみ)
+func LoadImage(path string) image.Image {
+	imgFile, _ := os.Open(path)
+	defer imgFile.Close()
+	img, _ := png.Decode(imgFile)
+
+	return img
 }
